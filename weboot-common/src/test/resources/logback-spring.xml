@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<springProperty scope="context" name="server_name" source="spring.application.name"/>
+	<property name="log_basedir" value="/home/logs/${server_name}" />
+	<property name="encoder_class" value="ch.qos.logback.classic.encoder.PatternLayoutEncoder" />
+	<property name="log_pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{globalTraceId}] [%threadId] [%thread] %-5level - %logger{80}:%line - %msg%n" />
+	
+	<conversionRule conversionWord="threadId" converterClass="com.github.yangwk.weboot.common.logback.ThreadIdConverter" />
+                  
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="${encoder_class}">
+            <pattern>${log_pattern}</pattern>
+			<charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log_basedir}/${server_name}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log_basedir}/${server_name}.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <maxHistory>180</maxHistory>
+            <maxFileSize>100MB</maxFileSize>
+        </rollingPolicy>
+        <encoder class="${encoder_class}">
+            <pattern>${log_pattern}</pattern>
+			<charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    
+    <appender name="OTHER_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      		<level>WARN</level>
+    	</filter>
+        <file>${log_basedir}/${server_name}-error.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+        	<fileNamePattern>${log_basedir}/${server_name}-error.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <maxHistory>180</maxHistory>
+            <maxFileSize>100MB</maxFileSize>
+        </rollingPolicy>
+        <encoder class="${encoder_class}">
+            <pattern>${log_pattern}</pattern>
+			<charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    
+    <logger name="com.github.yangwk.weboot" level="DEBUG"/>
+    <logger name="org.apache.http" level="INFO"/>
+    <logger name="org.apache.commons" level="DEBUG"/>
+    <logger name="org.springframework" level="DEBUG"/>
+    
+    <root>
+        <level value="INFO" />
+        <springProfile name="test">
+            <appender-ref ref="STDOUT" />
+        </springProfile>
+        <appender-ref ref="FILE" />
+        <appender-ref ref="OTHER_FILE" />
+    </root>
+    
+</configuration>  
+
